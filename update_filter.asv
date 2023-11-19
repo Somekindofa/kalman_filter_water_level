@@ -1,0 +1,45 @@
+function [G_n, P_n] = update_filter(A, C, Q, R, z_n, P_n, x_n)
+    
+    % Étape 1 : Prédiction de l'état suivant
+    z_pred = A * z_n;
+
+    % Étape 2 : Prédiction de la covariance suivante
+    P_pred = A * P_n * A' + Q;
+
+    % Étape 3 : Calcul de l'innovation
+    innovation = x_n - C * z_pred;
+
+    % Étape 5 : Calcul de la matrice de covariance résiduelle
+    S = C * P_pred * C' + R;
+
+    % Étape 6 : Calcul du gain de Kalman
+    G_n = P_pred * C' / S;
+
+    % Étape 7 : Mise à jour de l'estimation de l'état
+    z_n = z_pred + G_n * innovation;
+
+    % Étape 8 : Mise à jour de la matrice de covariance
+    P_n = P_pred - G_n * C * P_pred;
+
+end
+
+function [G_n, P_n] = update_filter(A, C, Q_v, Q_b, R, z_n, P_n, x_n)
+    e_n = zeros(size(x_n));
+    G_n = zeros(length(x_n), length(x_n));
+
+
+    z_pred = A * z_n; % Prédiction de l'état suivant
+
+    e_n = C * z_pred - x_n;
+
+    G_n = inv(Q_b + C'*P_n*C)*P_n*C;
+
+    P_pred = A * P_n * A' + Q; % Prédiction de la covariance suivante
+
+    z_n = A*(z_pred + G_n*e_n); % Mise à jour de l'état
+
+    P_n_inter = P_n - G_n  * C' * P_n; % Covariance de l'erreur d'observation intermediaire
+
+    P_n = A * P_n_inter * A' + Q_v; % update de la matrice de covariance de l'erreur d'observation
+
+end
